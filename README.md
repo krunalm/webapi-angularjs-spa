@@ -1,4 +1,4 @@
-WebApi-AngularJS-Spa v1.1.0
+WebApi-AngularJS-Spa v1.2.0
 ====================
 
 [![alt text](http://www.marlabs.com/sites/default/files/logo.png "Marlabs")](http://www.marlabs.com)
@@ -22,6 +22,7 @@ Client-Side
 * AngularJS
 * Semantic UI
 * Gulp.js
+* Jasmine
 
 Building the application
 ============
@@ -43,10 +44,22 @@ Client-Side
 5. Execute gulp tasks
     1. Run command **gulp build**.
     2. In order to clean the destination files created by build task, run **gulp cleanbuild**.
+    3. To run unit tests, run the command **gulp tests** 
+
     
-Migrating from v1.0.0 to v1.1.0
+Migrating from Previous Versions
 -------------------------------
-  If you are already using the Application version 1.0.0, please drop the database ResourceMetadata from your SQL server before running the Application
+  If you are already using the previous versions of the App, please drop the database ResourceMetadata from your SQL server before running the Application.
+
+# Changes in v1.2.0
+
+* Added unit tests for client-side JavaScript with Jasmine.
+* Added paging with ng-Table.
+* Role based security for both server-side and client-side.
+
+# Role Based Security
+
+Role based security has been implemented on both client-side and server-side. Write operations on the "Location" entity is restricted with admin role. There is a pre-defined admin user with credentials admin@marlabs.com/Marlabs
     
 # Current Features
 
@@ -57,14 +70,22 @@ Migrating from v1.0.0 to v1.1.0
 * AngularJS $http interceptors.
 * AngularJS directives.
 * Task automation with Gulp.js
+* Unit tests for client-side JavaScript with Jasmine.
+* Paging using ng-Table.
+* Role based security.
 
 
 # Roadmap Targets
 
-* Code refactoring.
-* Unit tests with Karma/Jasmine
 * Leverage Browserify 
 * Performance optimizations and best prarctices for SPA.
+* Enhanced security model for SPA.
+* Next-generation hybrid mobile apps with HTML5 and AngularJS.  
+
+# Team
+
+* [Shiju Varghese](http://weblogs.asp.net/shijuvarghese/) - Architect
+* [Dileep C.D.](https://github.com/DileepCD) - Lead Developer
 
 
 

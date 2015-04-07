@@ -1,20 +1,22 @@
 ﻿
-app.controller('LocationsCtrl', ['$scope', 'confirmSvc', 'locationSvc',
-        function ($scope, confirmSvc, locationSvc) {
-            $scope.locations = [];
-            init();
-            $scope.deleteLocation = function (locationId) {
-                if (confirmSvc.confirm('Do you want to delete this item?')) {
-                    locationSvc.deleteLocation(locationId)
-                    .then(function (data, responseHeaders) {
-                        loadLocations();
+app.controller('LocationsCtrl', ['$scope', 'ngTableParams', 'locationSvc',
+        function ($scope, ngTableParams, locationSvc) {
+            $scope.tableParams = new ngTableParams({
+                total: 1,
+                page: 1
+            }, {
+                counts: [],
+                getData: function ($defer, params) {
+                    locationSvc.getLocations().$promise.then(function (locations) {
+                        $defer.resolve(locations);
                     });
                 }
+            });
+
+            $scope.deleteLocation = function (locationId) {
+                locationSvc.deleteLocation(locationId).$promise
+                .then(function (data, responseHeaders) {
+                    $scope.tableParams.reload();
+                });
             };
-            function init() {
-                loadLocations();
-            }
-            function loadLocations() {
-                $scope.locations = locationSvc.getLocations();
-            }
         }]);

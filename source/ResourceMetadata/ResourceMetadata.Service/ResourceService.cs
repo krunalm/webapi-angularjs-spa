@@ -12,16 +12,18 @@ namespace ResourceMetadata.Service
     public class ResourceService : IResourceService
     {
         private IResourceRepository repository;
+        private IResourceActivityRepository activityRepository;
         private readonly IUnitOfWork unitOfWork;
-        public ResourceService(IResourceRepository repository, IUnitOfWork unitOfWork)
+        public ResourceService(IResourceRepository repository, IResourceActivityRepository activityRepository, IUnitOfWork unitOfWork)
         {
             this.repository = repository;
+            this.activityRepository = activityRepository;
             this.unitOfWork = unitOfWork;
         }
 
         public IEnumerable<Resource> GetAllResourcesByUserId(string userId)
         {
-            return repository.GetMany(res => res.Location.UserId == userId);
+            return repository.GetMany(res => res.UserId == userId);
         }
 
 
@@ -31,12 +33,6 @@ namespace ResourceMetadata.Service
         }
         public Resource AddResource(Resource resource)
         {
-            var existingResource = GetResourceByPriority(resource.Priority);
-            if (existingResource != null)
-            {
-                repository.Delete(existingResource);
-            }
-
             repository.Add(resource);
             unitOfWork.SaveChanges();
             return resource;
@@ -54,18 +50,17 @@ namespace ResourceMetadata.Service
 
         public Resource UpdateResource(Resource resource)
         {
-            var existingResource = GetResourceByPriority(resource.Priority);
-
-            if (existingResource != null && existingResource.Id !=  resource.Id)
+            try
             {
-                repository.Delete(existingResource);
+                repository.Update(resource);
+                SaveChanges();
+                return resource;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
 
-            
-
-            repository.Update(resource);
-            SaveChanges();
-            return resource;
         }
 
         public void DeleteResource(int id)
@@ -83,14 +78,37 @@ namespace ResourceMetadata.Service
 
         public IEnumerable<Resource> GetTopFiveResourcesByUserId(string userId)
         {
-            var resources = repository.GetMany(res => res.Location.UserId == userId).OrderBy(res => res.Priority).Take(5);
+            var resources = repository.Query(res => res.UserId == userId).OrderBy(res => res.Priority).Take(5);
+            return resources;
+        }
+
+        public IEnumerable<Resource> GetPagedResourcesByUserId(string userId, int count, int page, string sortField, string sortOrder, ref int totalCount)
+        {
+            var query = repository.Query(res => res.UserId == userId);
+
+            switch (sortField)
+            {
+                case "Description":
+                    {
+                        query = sortOrder.ToLower() == "asc" ? query.OrderBy(res => res.Description) : query.OrderByDescending(res => res.Description);
+                        break;
+                    }
+                default:
+                    {
+                        query = sortOrder.ToLower() == "asc" ? query.OrderBy(res => res.Name) : query.OrderByDescending(res => res.Name);
+                        break;
+                    }
+            }
+
+            totalCount = query.Count();
+            var resources = query.Skip((page - 1) * count).Take(count);
             return resources;
         }
     }
 
 
 
-    public interface IResourceService 
+    public interface IResourceService
     {
         Resource AddResource(Resource resource);
         IEnumerable<Resource> GetAllResources();
@@ -106,5 +124,7 @@ namespace ResourceMetadata.Service
         IEnumerable<Resource> GetAllResourcesByUserId(string userId);
 
         IEnumerable<Resource> GetTopFiveResourcesByUserId(string userId);
+
+        IEnumerable<Resource> GetPagedResourcesByUserId(string userId, int count, int page, string sortField, string sortOrder, ref int totalCount);
     }
 }
